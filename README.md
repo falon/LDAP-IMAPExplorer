@@ -1,6 +1,6 @@
 ![Initial view](https://github.com/falon/LDAP-IMAPExplorer/blob/master/screenshot.jpg?raw=true)
 
-LDAP &amp; IMAP Explorer is a tool to make report and search over LDAP profiled mailboxes account.
+LDAP &amp; IMAP Explorer is a tool to make reports and searches over LDAP profiled mailboxes.
 
 ## Abstract
 With this tool, you can combine usual LDAP search with IMAP data such as space usage and limit, quota of mailboxes accounts.
