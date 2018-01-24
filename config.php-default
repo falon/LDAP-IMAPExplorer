@@ -1,0 +1,19 @@
+<?php
+$from = 'Report manager <postmaster@example.com>';
+$mail_from = '<sysadmin@example.com>';
+$reply_to  ='Error manager <sysadmin@example.com>';
+$allowed_domain = 'example.com';
+
+$server = 'ldap.example.com';
+$port = 389;
+$baseDN = 'o=IMAPOrg,c=en';
+$imapAdmin = 'admin';
+$imapPwd   = 'admin';
+$dnlog = 'uid=admin,c=en';
+$password = 'admin';
+
+$syslog = array(
+	'tag'	=> 'LDAPIMAP',
+	'fac'	=> LOG_MAIL
+);
+?>
