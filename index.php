@@ -84,6 +84,10 @@ AND<input type="radio" value="AND" checked name="stype" onclick="xmlhttpPost('no
 $('body').on('hidden.bs.modal', '.modal', function () {
         $(this).removeData('bs.modal');
       });
+$('#myModal').modal('handleUpdate');
+$('#myModal').on('shown.bs.modal', function () {
+    $('#myModal').animate({ scrollTop: 0 }, 'slow');
+});
 </script>
 </body>
 </html>
