@@ -26,6 +26,7 @@ mailhost: <hostname>
 A version 7 of PHP is very recommended. A web browser as Apache is needed to access to user interface.
 - yum install php-ldap
 - yum install php-imap
+Bootstrap modalbox is linked directly on html and as needed on modal.css.
 
 ## Install
 - enter in the folder you create to contain this project.
