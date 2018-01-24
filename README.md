@@ -1,4 +1,4 @@
-![Initial view](https://github.com/falon/LDAP-IMAPExplorer/blob/master/screenshot.jpg?raw=true)
+![Initial view](screenshot.jpg)
 
 LDAP &amp; IMAP Explorer is a tool to make reports and searches over LDAP profiled mailboxes.
 
