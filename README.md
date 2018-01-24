@@ -19,7 +19,7 @@ mailhost: <hostname>
 ...
 ```
 
-<hostname> is the IMAP server (say better "popserver") which contains the account <username>.
+`<hostname>` is the IMAP server (say better "popserver") which contains the account `<username>`.
 
 ### system requirements
 A version 7 of PHP is very recommended. A web browser as Apache is needed to access to user interface.
