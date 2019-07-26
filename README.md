@@ -30,9 +30,11 @@ A version 7 of PHP is very recommended. A web browser as Apache is needed to acc
 Bootstrap modalbox is linked directly on html and as needed on modal.css.
 
 ## Install
-- enter in the folder you create to contain this project.
+- enter in the DOCUMENT ROOT of your web server.
 - Git clone this project.
-- Move `style.css` and `ajaxsbmt.js` in `DOCUMENT_ROOT/include` dir. Copy `config.php-default` in `config.php` and configure it as your need.
+- Install the "falon-common" shared HTML library
+- Move `style.css` and `ajaxsbmt.js` in `DOCUMENT_ROOT/include` dir, if your didn't install the "falon-common" by RPM.
+- Copy `config.php-default` in `config.php` and configure it as your need.
 - `composer require phpoffice/phpspreadsheet`
 - mkdir tmp
 - chown apache tmp
