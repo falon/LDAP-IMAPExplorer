@@ -1,0 +1,40 @@
+/* Used to show ACL tables in account view */
+
+.dropbtn {
+  border: none;
+}
+
+.dropdown {
+  position: relative;
+  display: table;
+  table-layout: auto;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background: CornflowerBlue;
+  box-shadow: 0px 8px 16px 0px rgba(100,149,237,0.9);
+  z-index: 1;
+}
+
+.dropdown-content p {
+  color: black;
+  background: PowderBlue;
+  margin: 0;
+  padding: 2;
+  min-width: 90px;
+  white-space: nowrap;
+  text-decoration: none;
+  display: table-cell;
+}
+
+.dropdown-content #tablerow {
+  display: table-row;
+}
+
+.dropdown-content p:hover {background: #ddd;}
+
+.dropdown:hover .dropdown-content {display: block;}
+
+.dropdown:hover .dropbtn {background: CornflowerBlue;}

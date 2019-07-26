@@ -1,5 +1,8 @@
 	<?php
 
+	require 'vendor/autoload.php';
+	use Horde\Imap_Client;
+
 	$opt['onlyldap'] = $_GET["onlyldap"];
         require_once('config.php');
         require_once('ldapfunctions.php');
@@ -30,46 +33,67 @@
 			exit();
 		}
 		$mailhost = $result[0]['mailhost'][0];
-		$mailbox = '*';
-				$info = escapeshellcmd('/usr/bin/ssh root@'.$mailhost.' /usr/local/bin/cyr_showuser.pl -u '.$result[0]['uid'][0]);
+		list($uid, $dom) = explode('@',$result[0]['uid'][0]);
+		$mailbox = array('INBOX','INBOX/*');
 
-		$mbox = imap_open('{'.$mailhost.':143/imap/novalidate-cert/readonly/authuser='.$imapAdmin.'}',
-			$result[0]['uid'][0], $imapPwd, OP_HALFOPEN)
-                     or print ("<p>ERROR: <$imapAdmin> can't connect to < $mailhost >: " . imap_last_error() . 
-			"<br>Following results could be ambiguous or wrong.</p>\n");
+		$mbox=imapopen($result[0]['uid'][0],$imapPwd,$mailhost,$imapAdmin);
+		if ($mbox) {
+			try {
+				$list = $mbox->listMailboxes($mailbox,
+					\Horde_Imap_Client::MBOX_ALL,
+					array(
+					      	'status' => 50,
+						'sort' => true,
+						'sort_delimiter' => '/'
+					)
+				);
+			}
+			catch (Horde_Imap_Client_Exception $e) {
+				syslog(LOG_INFO,  "IMAP Error in LISTING commands: $e");
+				exit ('Some errors happen. See at log.');
+			}
 
-		$list = imap_list($mbox, '{'.$mailhost.':143/imap/novalidate-cert/readonly}', $mailbox );
-		if (is_array($list)) {
-		    print '<br><table><thead><tr><th>Folder</th><th>#mail</th><th>Recenti</th><th>Non letti</th></tr></thead><tbody>';
-		    foreach ($list as $val) {
-			print '<tr><td>'.htmlspecialchars(mb_convert_encoding(mailboxname($val,'proxy'), "UTF-8", "UTF7-IMAP")).'</td>';
-		        if ($status=imap_status($mbox, $val, SA_MESSAGES+SA_RECENT+SA_UNSEEN))
-				print "<td>". $status->messages    . "</td>".
-				      "<td>". $status->recent    . "</td>".
-				      "<td>". $status->unseen    . "</td></tr>";
-			else print '<td>Denied</td><td>Denied</td><td>Denied</td></tr>';
+			print '<br><table><thead><tr><th title="Move on folder name to show the ACL">Folder and ACL</th><th>#mail</th><th>Recent</th><th>Unseen</th><th>SharedSeen</th><th>Expire</th><th>Size (MB)</th></tr></thead><tbody>';
+			if (is_array($list)) {
+				foreach ($list as $val) {
+					$acl = $mbox ->getACL($val['mailbox']);
+					printf('<tr><td>%s</td><td>%d</td><td>%d</td><td>%d</td>',
+						printACL($val['mailbox'], $acl),
+						$val['status']['messages'],
+						$val['status']['recent'],
+						$val['status']['unseen']
+					);
+					try {
+						$meta = array('/shared/vendor/cmu/cyrus-imapd/expire',
+							'/shared/vendor/cmu/cyrus-imapd/sharedseen',
+							'/shared/vendor/cmu/cyrus-imapd/size' );
+						$metaValues = $mbox->getMetadata($val['mailbox'], $meta);
+					}
+					catch (Horde_Imap_Client_Exception $e) {
+						syslog(LOG_INFO,  "IMAP Error in METADATA query: $e");
+						exit ('Some errors happen. See at log.');
+		                        }
+
+					if (is_array($metaValues)) {
+						$mboxName = \Horde_Imap_Client_Mailbox::get($val['mailbox'], ENT_QUOTES, 'UTF-8');
+						printf('<td>%s</td><td>%s</td><td>%d</td></tr>',
+							$metaValues["$mboxName"]['/shared/vendor/cmu/cyrus-imapd/sharedseen'],
+							(isset($metaValues["$mboxName"]['/shared/vendor/cmu/cyrus-imapd/expire'])) ?
+								$metaValues["$mboxName"]['/shared/vendor/cmu/cyrus-imapd/expire'] :
+								'-',
+							formatGB($metaValues["$mboxName"]['/shared/vendor/cmu/cyrus-imapd/size'])
+						);
+					}
+				}
+			}
+			else print '<tr><td>Denied</td><td>Denied</td><td>Denied</td><td>Denied</td><td>Denied</td><td>Denied</td></tr>';
+				
+			$mbox->close();
 		    }
 		    print '</tbody></table>';
-		} else {
-		    echo "imap_list failed: " . imap_last_error() . "\n";
-		}
-		
-		imap_close($mbox);
-
-		# Show other info
-		exec($info,$out);
-		print '<br><table>';
-		for ($r=0;$r<4;$r++) {	//only first three lines!
-			$keywords = preg_split("/\s{2,}/",$out[$r]);
-			$t = count($keywords);
-			if ($t>1) print '<tr>';
-			for ($k=1;$k<$t;$k++)
-				print '<td>'.$keywords[$k].'</td>';
-			if ($t>1) print '</tr>';
-		}
-		print '</table>';
 	}
+		
 	?>
-    <div class="modal-footer">
+    	<div class="modal-footer">
                 <button type="button" class="button" data-dismiss="modal">Close</button>
-            </div>                      <!-- /modal-footer -->
+        </div>                      <!-- /modal-footer -->

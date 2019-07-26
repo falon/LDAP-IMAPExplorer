@@ -1,4 +1,9 @@
 <?php
+require 'vendor/autoload.php';
+use Horde\Imap_Client;
+#use Horde\Cache;
+#use Horde\Memcache;
+
 require_once('functions.php');
 require_once('ldapfunctions.php');
 require_once('config.php');
@@ -8,6 +13,9 @@ $opt['nobelowth'] = FALSE;
 if (isset($_POST['soglia'])) {
         $opt['soglia'] = $_POST["soglia"];
 	$opt['nobelowth'] = (isset($_POST['nobelowth'])) ? $_POST['nobelowth'] : FALSE;
+}
+else {
+	$opt['soglia'] = NULL;
 }
 if (isset($_POST["uid"])) if ($_POST["uid"]!="") $attr['uid']=$_POST["uid"];
 if (isset($_POST["mail"])) { 
@@ -48,8 +56,8 @@ if ((isset($attr['uid']))OR(isset($attr['mail']))OR(isset($attr['mailalternatead
 	clientIP($user);
 	if (version_compare(PHP_VERSION, '7.0.0') < 0)
         	syslog(LOG_ALERT, "Info: Please upgrade to PHP 7.");
+	$ldapattr = search_uid($user,$_POST['dn'],$attr,$server,$port,$dnlog,$password,$opt);
 
-        $ldapattr = search_uid($user,$_POST['dn'],$attr,$server,$port,$dnlog,$password,$opt);
         $key=quota_control($user,$ldapattr,$opt,$imapAdmin,$imapPwd);
 }
 ?>

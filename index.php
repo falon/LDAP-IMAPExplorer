@@ -3,6 +3,7 @@
 <title>I Quoting You!</title>
 <link rel="stylesheet" type="text/css" href="/include/style.css">
 <link rel="stylesheet" type="text/css" href="modal.css">
+<link rel="stylesheet" type="text/css" href="menustyle.css">
 <link rel="SHORTCUT ICON" href="favicon.ico">
 
 <script  src="/include/ajaxsbmt.js" type="text/javascript"></script>
@@ -14,7 +15,7 @@
 require_once('config.php');
 ?>
 
-<h1>LDAP&IMAP Explorer</h1>
+<h1>Cyrus Explorer</h1>
  <form method="POST" name="Richiestadati" action="result.php" onSubmit="xmlhttpPost('result.php', 'Richiestadati', 'Risultato', '<img src=\'/include/pleasewait.gif\'>'); return false;">
 <table>
  <thead>
@@ -49,14 +50,13 @@ AND<input type="radio" value="AND" checked name="stype" onclick="xmlhttpPost('no
 <tr>
       <td colspan="2">
       Attributes to show<br />(uid and mail always)</td>
-      <td>
-      <div class="noscroll">
+      <td class="noscroll">
       <select multiple="" name="retattr[]" size="4">
       <option value="mailalternateaddress">Alias email</option>
       <option value="cn">Common Name</option>
       <option value="givenname">Name</option>
       <option value="sn">Surname</option>
-      </select></div></td>
+      </select></td>
 
     </tr>
 </tbody>
@@ -70,6 +70,7 @@ AND<input type="radio" value="AND" checked name="stype" onclick="xmlhttpPost('no
 </form>
 <div id="Risultato"></div>
 <div id="Email"></div>
+
 
 <!-- Modal -->
 <div id="myModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">

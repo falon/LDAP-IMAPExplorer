@@ -83,6 +83,61 @@ function search_uid ($userlog,$dn,$ldapattr,$server,$port,$login,$pas,&$opt) {
 	return $result;
 }
 
+function imapopen($user,$password,$host, $authuser=NULL) {
+	/* try {
+		$memc = new Horde_Memcache(array(
+                                        'compression'   => false,
+                                        'c_threshold'   => 0,
+                                        'hostspec'      => array('localhost'),
+                                        'large_items'   => true,
+                                        'persistent'    => false,
+                                        'prefix'        => 'CYRUS_',
+                                        'port'          => array('11211')
+		));
+	}
+	catch (\Horde_Memcache_Exception $e) {
+                // Any errors will cause an Exception.
+                syslog(LOG_INFO,  "MEMCACHE Error: $e");
+                exit ('Some errors happen about Memcache interface. See at log.');
+        }
+	 */
+	try {
+	    /* Connect to an IMAP server.
+	     *   - Use Horde_Imap_Client_Socket_Pop3 (and most likely port 110) to
+	     *     connect to a POP3 server instead. */
+	    if (is_null($authuser))
+		    $authuser = $user;
+	    $client = new Horde_Imap_Client_Socket(array(
+		'username' => $user,
+		'authusername' => $authuser,
+	        'password' => $password,
+        	'hostspec' => $host,
+        	'port' => '143',
+        	'secure' => false,
+ 
+        	// OPTIONAL Debugging. Will output IMAP log to the /tmp/foo file
+        	'debug' => '/tmp/foo',
+ 
+	        // OPTIONAL Caching. Will use cache files in /tmp/hordecache.
+        	// Requires the Horde/Cache package, an optional dependency to
+        	// Horde/Imap_Client.
+        	//'cache' => array(
+            	//	'backend' => new Horde_Imap_Client_Cache_Backend_Cache(array(
+		//		'cacheob' => new Horde_Cache(new Horde_Cache_Storage_Memcache(array(
+		//			'memcache'	=> $memc,
+		//			'prefix'	=> 'CYRUS_'
+                //		)))
+            	//	))
+        	//)
+	   ));
+	   return $client;
+	} catch (Horde_Imap_Client_Exception $e) {
+		// Any errors will cause an Exception.
+		syslog(LOG_INFO,  "IMAP Error: $e");
+		exit ('Some errors happen. See at log.');
+	}
+}
+
 function quota_check ($ldapi,$imapuser,$imap_password,$threshold,$nobelowth) {
 
 
@@ -92,7 +147,6 @@ function quota_check ($ldapi,$imapuser,$imap_password,$threshold,$nobelowth) {
         $space['occ']=0;        //Tot spazio occupato
         $space['tot']=0;        //Tot spazio riservato
         $space['nl']=array();   //Elenco utenti nolimits
-
 
 	for ($f=0;$f<$ldapi['count'];$f++) {
 
@@ -106,17 +160,32 @@ function quota_check ($ldapi,$imapuser,$imap_password,$threshold,$nobelowth) {
 		$mailhost = $ldapi[$f]['mailhost'][0];
 		$uid = $ldapi[$f]['uid'][0];
 				$account = 'user/'.$uid;
-		$mbox = imap_open('{'.$mailhost.':143/imap/novalidate-cert/readonly}', $imapuser, $imap_password, OP_HALFOPEN)
-		     or print ("<p>ERROR: <$imapuser> can't connect to <$mailhost>: " . imap_last_error() . "<br>Following results could be ambiguous or wrong.</p>\n");
+		$mbox=imapopen($imapuser,$imap_password,$mailhost);
+		if ($mbox) {
+			try {
+				$quota_values = $mbox->getQuotaRoot($account);
+			}
+			catch (Horde_Imap_Client_Exception $e) {
+				syslog(LOG_INFO,  "IMAP Error: $e");
+				exit ('Some errors happen. See at log.');
+			}
 
-	        if ($mbox) $quota_values = imap_get_quota($mbox, $account);
-		$imapErr = imap_errors();
-		if (count($imapErr) > 1 || $imapErr[0] != 'SECURITY PROBLEM: insecure server advertised AUTH=PLAIN') {
-			syslog(LOG_INFO,  'ldapuser: Err: IMAP: '. implode(', ',$imapErr));
+			try {
+				$meta = array('/shared/vendor/cmu/cyrus-imapd/lastpop',
+					'/shared/vendor/cmu/cyrus-imapd/lastupdate',
+					'/shared/vendor/cmu/cyrus-imapd/partition' );
+				$metaValues = $mbox->getMetadata($account, $meta);
+			}
+			catch (Horde_Imap_Client_Exception $e) {
+				syslog(LOG_INFO,  "IMAP Error: $e");
+				exit ('Some errors happen. See at log.');
+			}
+
 		}
-		imap_close($mbox);
+		$mbox->close();
+		$ldapi[$f]['anno'] = $metaValues["$account"];
 		if (is_array($quota_values)) {
-		  $ldapi[$f] = array_merge($ldapi[$f], $quota_values['STORAGE']);
+			$ldapi[$f] = array_merge($ldapi[$f], $quota_values["$account"]['storage']);
 		  $ldapi[$f]['perc'] = ceil(($ldapi[$f]['usage']/$ldapi[$f]['limit'])*100);
                   if ($ldapi[$f]['perc'] < $threshold) {
                         $ldapi[$f]['style'] = 3;
@@ -196,13 +265,13 @@ function view_store ($user,$opt) {
 	$LDAPnuser = $user['count'];
 
         if ($LDAPnuser!=0) {
-                $message = "<table><caption>Result</caption><thead><th>Username</th>";
+                $message = "<table><caption>Result</caption><thead><tr><th>Username</th>";
                 foreach ($opt['retattr'] as $attr) { 
                         if (($attr=='uid')OR($attr=='objectclass')) continue;
                         $message.= "<th>$attr</th>";
                 }
 	
-                $message.='<th>%</th><th>Usage</th><th>Limit</th></tr></thead><tbody>';
+                $message.='<th>%</th><th>Usage</th><th>Limit</th><th>Last IMAP</th><th>Last POP</th><th>Part</th></tr></thead><tbody>';
         }
 
 	else $message = "<p>No result found.</p>";
@@ -245,14 +314,27 @@ function view_store ($user,$opt) {
 			if (!isset($user[$f]["$attr"]))
 				$user[$f]["$attr"] = NULL;
                         $message.= "<td$style>".printattr($user[$f]["$attr"]).'</td>';
-                }
-		$message.= "<td$style>".(($user[$f]['perc']) ?: 'N/A')."</td><td$style>".formatMB($user[$f]['usage'])."</td><td$style>".formatMB($user[$f]['limit'])."</td></tr>";
+		}
+		$message .= sprintf('<td %s>%s</td><td %s>%d</td><td %s>%s</td><td %s>%s</td><td %s>%s</td><td %s>%s</td></tr>',
+			$style,
+			(($user[$f]['perc']) ?: 'N/A'),
+			$style,
+			formatMB($user[$f]['usage']),
+			$style,
+			formatMB($user[$f]['limit']),
+			$style,
+			$user[$f]['anno']['/shared/vendor/cmu/cyrus-imapd/lastupdate'],
+			$style,
+			$user[$f]['anno']['/shared/vendor/cmu/cyrus-imapd/lastpop'],
+			$style,
+			$user[$f]['anno']['/shared/vendor/cmu/cyrus-imapd/partition']
+		);
 
 	}
 
-	$cs = count($opt['retattr'])+3;
+	$cs = count($opt['retattr'])+6;
         if ($LDAPnuser!=0) {
-		$message.="</tbody><tfoot><tr><td colspan=\"$cs\">LDAP entries: {$user['ldap']}<br>Mailboxes account with at least one access: ".$user['cont']."<br>Mailboxes over threshold ({$opt['soglia']}%): ".$user['numbaduser'].'<br>Mailboxes overquota: '.$user['overquota'].'<br>Reserved space: '.formatGB($user['space']['tot']).' GiB<br>Busy space: '.formatGB($user['space']['occ'])." GiB</td></tr></tfoot></table>";
+		$message.="</tbody><tfoot><tr><td colspan=\"$cs\">LDAP entries: {$user['ldap']}<br>Mailboxes account: ".$user['cont']."<br>Mailboxes over threshold ({$opt['soglia']}%): ".$user['numbaduser'].'<br>Mailboxes overquota: '.$user['overquota'].'<br>Reserved space: '.formatGB($user['space']['tot']).' GiB<br>Busy space: '.formatGB($user['space']['occ'])." GiB</td></tr></tfoot></table>";
 	}
 	return $message;
 }
@@ -359,7 +441,7 @@ function printformEmail ($data) {
         <p><input type="submit" value="Download the Excel file" name="Engage" class="btn">
         </form>
         </div>
-	<div id="content" class="left" style="width: 50ex">
+	<div id="content" class="left">
 	 <form method="POST" name="EmailForm" action="sendmail.php" onSubmit="xmlhttpPost('sendmail.php', 'EmailForm', 'Email', '<img src=\'/include/pleasewait.gif\'>'); return false;">
 	<fieldset><legend>Send these results to:</legend><p><input type="email" placeholder="type your email address" name="mailto" size="50" required></p>
 	<input type="hidden" name="entries" value="$post"></input>
@@ -460,7 +542,7 @@ function composeXLS($input) {
 
 	/* Attributes array */
 	if ($imap) 
-		array_push($retattr, 'perc','usage','limit');
+		array_push($retattr, 'perc','usage','limit','Last IMAP','Last POP','Partition');
 	foreach ($retattr as $val) {
 		switch ( $val ) {
 			case 'objectclass':
@@ -477,6 +559,17 @@ function composeXLS($input) {
 	for ($i=0; $i<$ldapres['count']; $i++) {
 		for( $j=0; $j<$nattr; $j++) {
 			$name = $write[0][$j];
+			switch ($name) {
+				case 'Last IMAP':
+					$write[$i+1][$j] = $ldapres[$i]['anno']['/shared/vendor/cmu/cyrus-imapd/lastupdate'];
+					continue 2;
+				case 'Last POP':
+					$write[$i+1][$j] = $ldapres[$i]['anno']['/shared/vendor/cmu/cyrus-imapd/lastpop'];
+					continue 2;
+				case 'Partition':
+					$write[$i+1][$j] = $ldapres[$i]['anno']['/shared/vendor/cmu/cyrus-imapd/partition'];
+					continue 2;
+			}
 			if (isset( $ldapres[$i]["$name"]['count'] ))
 				unset ($ldapres[$i]["$name"]['count']);
 			if (empty($ldapres[$i]["$name"]))
@@ -629,5 +722,23 @@ function columnLetter($c){
     
     return $letter;
         
+}
+
+function printACL($mailbox, $acl) {
+	/* print a menu with ACL mailboxes
+	 * $mailbox = Horde_Imap_Client_Mailbox object
+	 * $acl = array of Horde_Imap_Client_Data_Acl object
+	 * 	as returned by getACL function */
+	$mboxName = htmlspecialchars(\Horde_Imap_Client_Mailbox::get($mailbox, ENT_QUOTES, 'UTF-8'));
+	$return = sprintf('<div class="dropdown"><div class="dropbtn">%s</div><div class="dropdown-content">',
+		$mboxName);
+	foreach ($acl as $account => $priv) {
+		$return .= sprintf('<div id="tablerow"><p>%s</p><p>%s</p></div>',
+			$account,
+			$priv->getString('RFC_4314')
+		);
+	}
+	$return .= '</div></div>';
+	return $return;
 }
 ?>
