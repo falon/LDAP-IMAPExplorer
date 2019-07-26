@@ -12,10 +12,11 @@
 </head>
 <body>
 <?php
-require_once('config.php');
+$ini = parse_ini_file('LDAP-IMAPExplorer.conf', true);
+$baseDN= $ini['ldap']['baseDN'];
 ?>
 
-<h1>Cyrus Explorer</h1>
+<h1>LDAP-IMAP Explorer</h1>
  <form method="POST" name="Richiestadati" action="result.php" onSubmit="xmlhttpPost('result.php', 'Richiestadati', 'Risultato', '<img src=\'/include/pleasewait.gif\'>'); return false;">
 <table>
  <thead>

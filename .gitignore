@@ -1,5 +1,4 @@
-config.php
+*.conf
 vendor
 composer.lock
-report.html
 _config.yml

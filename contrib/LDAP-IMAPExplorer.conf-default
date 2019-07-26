@@ -1,0 +1,10 @@
+<Directory /var/www/html/LDAP-IMAPExplorer>
+    Options FollowSymLinks
+    AllowOverride None
+    AuthBasicProvider authservice
+    AuthName "Welcome to LDAP-IMAP Explorer!"
+    AuthType basic
+    <RequireAny>
+            Require maillogUsers
+    </RequireAny>
+</Directory>

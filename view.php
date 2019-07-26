@@ -4,7 +4,16 @@
 	use Horde\Imap_Client;
 
 	$opt['onlyldap'] = $_GET["onlyldap"];
-        require_once('config.php');
+	$ini = parse_ini_file('LDAP-IMAPExplorer.conf', true);
+	$baseDN= $ini['ldap']['baseDN'];
+	$server= $ini['ldap']['server'];
+	$port =  $ini['ldap']['port'];
+	$dnlog = $ini['ldap']['bind'];
+	$password = $ini['ldap']['password'];
+	$imapAdmin = $ini['imap']['admin'];
+	$imapPwd   = $ini['imap']['password'];
+	$syslog    = $ini['syslog'];
+
         require_once('ldapfunctions.php');
         require_once('functions.php');
 	openlog($syslog['tag'], LOG_PID, $syslog['fac']);

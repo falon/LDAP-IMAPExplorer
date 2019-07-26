@@ -1,7 +1,14 @@
 <?php
 if (!isset($_POST['entries'])) exit(255);
 $data = unserialize($_POST['entries']);
-require_once('config.php');
+
+$ini = parse_ini_file('LDAP-IMAPExplorer.conf', true);
+$from= $ini['email']['from'];
+$mail_from = $ini['email']['mail_from'];
+$reply_to  = $ini['email']['reply_to'];
+$allowed_domain = $ini['email']['allowed_domain'];
+$syslog    = $ini['syslog'];
+
 require_once('functions.php');
 require 'vendor/autoload.php';
 use PhpOffice\PhpSpreadsheet\Spreadsheet;

@@ -1,0 +1,20 @@
+[email]
+from = Report manager <postmaster@example.com>
+mail_from = <sysadmin@example.com>
+reply_to  = Error manager <sysadmin@example.com>
+allowed_domain = example.com
+
+[ldap]
+server = ldap.example.com
+port = 389
+baseDN = "o=IMAPOrg,c=en"
+bind = "uid=admin,c=en"
+password = admin
+
+[imap]
+admin = admin
+password   = admin
+
+[syslog]
+tag	= LDAP-IMAPExplorer
+fac	= LOG_MAIL
