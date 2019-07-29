@@ -39,4 +39,8 @@ Bootstrap modalbox is linked directly on html and as needed on modal.css.
 - mkdir tmp
 - chown apache tmp
 
-More detailed info will follow...
+## Licensing
+This program include:
+- PHPSpreadSheet https://phpspreadsheet.readthedocs.io
+- Horde IMAP Client https://github.com/horde/Imap_Client
+See at the above projects for additional limitations or licenses on the use of this software.

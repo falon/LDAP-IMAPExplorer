@@ -14,7 +14,6 @@ BuildArch:	noarch
 Requires: httpd >= 2.4.6
 Requires: mod_ssl >= 2.4.6
 Requires: php >= 7.1
-Requires: php-imap >= 7.1
 Requires: php-ldap >= 7.1
 Requires: FalonCommon >= 0.1.1
 BuildRequires: composer >= 1.8.0
@@ -29,10 +28,15 @@ BuildRequires: systemd
 
 %description
 %{name} (specifically for Cyrus IMAP)
-provides an web interface to browse your LDAP trees where your
+provides a web interface to browse your LDAP trees where your
 IMAP account are defined. For each IMAP account you can see a lot
 of details, such as quota, last access, IMAP folders, ACL...
-You can make reports and export them to Excel.
+You can make reports, export them to Excel and send to mail address.
+This program include:
+- PHPSpreadSheet https://phpspreadsheet.readthedocs.io
+- Horde IMAP Client https://github.com/horde/Imap_Client
+See at above projects for additional limitations or licenses.
+GIT: https://github.com/falon/LDAP-IMAPExplorer
 
 %clean
 rm -rf %{buildroot}/
@@ -50,16 +54,20 @@ sed -i 's|\/var\/www\/html\/%{name}|%{_datadir}/%{name}|' %{buildroot}%{_sysconf
 mkdir -p %{buildroot}%{_datadir}/%{name}
 cp -a * %{buildroot}%{_datadir}/%{name}/
 mv %{buildroot}%{_datadir}/%{name}/%{name}.conf-default %{buildroot}%{_sysconfdir}/%{name}.conf
+sed -i 's|%{name}.conf|%{_sysconfdir}/%{name}.conf|' *.php
 ##Composer requirement
 composer --working-dir="%{buildroot}%{_datadir}/%{name}" update
+find %{buildroot}%{_datadir}/%{name}/vendor/pear-pear.horde.org -type f -print0 | xargs -0 sed -i "s@$RPM_BUILD_ROOT@@"
 ## Remove unnecessary files
-rm %{buildroot}%{_datadir}/%{name}/_config.yml %{buildroot}%{_datadir}/%{name}/contrib/%{name}.conf-default %{buildroot}%{_datadir}/%{name}/composer.*
+rm %{buildroot}%{_datadir}/%{name}/_config.yml %{buildroot}%{_datadir}/%{name}/composer.*
 rm -rf %{buildroot}%{_datadir}/%{name}/contrib
+rm -rf %{buildroot}%{_datadir}/%{name}/vendor/phpoffice/phpspreadsheet/.git*
 ## Add the tmp dir
 install -d -m0700 -o apache -g root %{buildroot}%{_datadir}/%{name}/tmp
 
 ##File list
-find %{buildroot}%{_datadir}/%{name} -mindepth 1 -type f | grep -v \.conf$ | grep -v \.git | grep -v %{bigname}/LICENSE | grep -v %{name}/README\.md | sed -e "s@$RPM_BUILD_ROOT@@" > FILELIST
+find %{buildroot}%{_datadir}/%{name} -mindepth 1 -type f -print0 | xargs -0 -L1 | grep -v \.conf$ | grep -v \.git | grep -v %{name}/LICENSE | grep -v %{name}/README\.md | sed -e "s@$RPM_BUILD_ROOT@\"@" | sed "s/$/\"/" > FILELIST
+
 
 %post
 case "$1" in
@@ -69,9 +77,11 @@ case "$1" in
 esac
 
 %files -f FILELIST
+%dir %attr(0700, apache, root) %{_datadir}/%{name}/tmp
 %license %{_datadir}/%{name}/LICENSE
 %doc %{_datadir}/%{name}/README.md
 %config(noreplace) %{_sysconfdir}/%{name}.conf
+%config(noreplace) %{_sysconfdir}/httpd/conf.d/%{name}.conf
 
 %changelog
 * Fri Jul 26 2019 Marco Favero <marco.favero@csi.it> 1.0.0-0
