@@ -30,12 +30,30 @@ A version 7 of PHP is very recommended. A web browser as Apache is needed to acc
 Bootstrap modalbox is linked directly on html and as needed on modal.css.
 
 ## Install
+### By RPM
+If you have a yum based system, don't waste time , simply proceed as follow:
+- vi `/etc/yum/repos.d/falon.repo`:
+
+```
+[fury]
+name=Falon CSI Repo
+baseurl=https://yum.fury.io/csi/
+enabled=1
+gpgcheck=0
+```
+- yum install LDAP-IMAPExplorer
+- reload your Apache server
+- point at http(s)://<yourserver>/ldapimap
+
+Enjoy!
+
+### By source
 - enter in the DOCUMENT ROOT of your web server.
 - Git clone this project.
 - Install the "falon-common" shared HTML library
 - Move `style.css` and `ajaxsbmt.js` in `DOCUMENT_ROOT/include` dir, if your didn't install the "falon-common" by RPM.
-- Copy `config.php-default` in `config.php` and configure it as your need.
-- `composer require phpoffice/phpspreadsheet`
+- Copy `LDAP-IMAPExplorer.conf-default` in `LDAP-IMAPExplorer.conf` and configure it as your need.
+- `composer update`
 - mkdir tmp
 - chown apache tmp
 
@@ -43,4 +61,5 @@ Bootstrap modalbox is linked directly on html and as needed on modal.css.
 This program include:
 - PHPSpreadSheet https://phpspreadsheet.readthedocs.io
 - Horde IMAP Client https://github.com/horde/Imap_Client
+
 See at the above projects for additional limitations or licenses on the use of this software.
