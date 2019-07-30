@@ -54,7 +54,7 @@ sed -i 's|\/var\/www\/html\/%{name}|%{_datadir}/%{name}|' %{buildroot}%{_sysconf
 mkdir -p %{buildroot}%{_datadir}/%{name}
 cp -a * %{buildroot}%{_datadir}/%{name}/
 mv %{buildroot}%{_datadir}/%{name}/%{name}.conf-default %{buildroot}%{_sysconfdir}/%{name}.conf
-sed -i 's|%{name}.conf|%{_sysconfdir}/%{name}.conf|' *.php
+sed -i 's|%{name}.conf|%{_sysconfdir}/%{name}.conf|' %{buildroot}%{_datadir}/%{name}/*.php
 ##Composer requirement
 composer --working-dir="%{buildroot}%{_datadir}/%{name}" update
 find %{buildroot}%{_datadir}/%{name}/vendor/pear-pear.horde.org -type f -print0 | xargs -0 sed -i "s@$RPM_BUILD_ROOT@@"
