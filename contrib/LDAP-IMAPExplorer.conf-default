@@ -5,7 +5,7 @@
     AuthName "Welcome to LDAP-IMAP Explorer!"
     AuthType basic
     <RequireAny>
-            Require maillogUsers
+            Require all granted
     </RequireAny>
 </Directory>
 Alias /ldapimap "/var/www/html/LDAP-IMAPExplorer"
