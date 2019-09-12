@@ -43,7 +43,7 @@ gpgcheck=0
 ```
 - yum install LDAP-IMAPExplorer
 - reload your Apache server
-- point at http(s)://<yourserver>/ldapimap
+- point at `http(s)://<yourserver>/ldapimap`
 
 Enjoy!
 
