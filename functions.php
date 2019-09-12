@@ -146,7 +146,10 @@ function quota_check ($ldapi,$imapuser,$imap_password,$threshold,$nobelowth) {
         $overquota=0;   //Utenti su mailstore overquota trovati
         $space['occ']=0;        //Tot spazio occupato
         $space['tot']=0;        //Tot spazio riservato
-        $space['nl']=array();   //Elenco utenti nolimits
+	$space['nl']=array();   //Elenco utenti nolimits
+	$previous_mailhost=NULL;
+	$mailhost=NULL;
+	$mbox=false;
 
 	for ($f=0;$f<$ldapi['count'];$f++) {
 
@@ -157,10 +160,15 @@ function quota_check ($ldapi,$imapuser,$imap_password,$threshold,$nobelowth) {
 		$ldapi[$f]['usage'] = NULL;
 		$ldapi[$f]['limit'] = NULL;
 
+		$previous_mailhost=$mailhost;
 		$mailhost = $ldapi[$f]['mailhost'][0];
 		$uid = $ldapi[$f]['uid'][0];
-				$account = 'user/'.$uid;
-		$mbox=imapopen($imapuser,$imap_password,$mailhost);
+		$account = 'user/'.$uid;
+
+		if ($mailhost != $previous_mailhost) {
+			if ($f>0) $mbox->close();
+			$mbox=imapopen($imapuser,$imap_password,$mailhost);
+		}
 		if ($mbox) {
 			try {
 				$quota_values = $mbox->getQuotaRoot($account);
@@ -182,7 +190,6 @@ function quota_check ($ldapi,$imapuser,$imap_password,$threshold,$nobelowth) {
 			}
 
 		}
-		$mbox->close();
 		$ldapi[$f]['anno'] = $metaValues["$account"];
 		if (is_array($quota_values)) {
 			$ldapi[$f] = array_merge($ldapi[$f], $quota_values["$account"]['storage']);
@@ -211,7 +218,7 @@ function quota_check ($ldapi,$imapuser,$imap_password,$threshold,$nobelowth) {
 		/* For a BUG above, these are the real NOLIMIT users */
 		else $ldapi[$f]['style'] = -1;
 	}
-
+	$mbox->close();
 	$tot = $ldapi['count'];
 	$ldapi = reindex($ldapi,$threshold,$nobelowth);
 
@@ -371,6 +378,7 @@ function view_ldap($user,$opt) {
         	$message.= "<tr><td>".linkurl($link,$linktext,$opt['onlyldap'],NULL)."</td>";
 		foreach ($opt['retattr'] as $attr) {
 			if (($attr=='uid')OR($attr=='objectclass')) continue;
+			$user[$f]["$attr"] = $user[$f]["$attr"] ?? ''; // Prevent notice on undef index
 			$message.='<td>'.printattr($user[$f]["$attr"]).'</td>';
                 }
 		$message.='</tr>';;
