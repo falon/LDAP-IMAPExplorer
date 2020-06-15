@@ -3,7 +3,7 @@
 Summary: A complete, more than an RBL Management System.
 Name: LDAP-IMAPExplorer
 Version: 1.0.0
-Release: 0%{?dist}
+Release: 1%{?dist}
 Group: Networking/Mail
 License: Apache-2.0
 URL: https://falon.github.io/%{name}/
@@ -64,6 +64,7 @@ find %{buildroot}%{_datadir}/%{name}/vendor/pear-pear.horde.org -type f -print0 
 rm %{buildroot}%{_datadir}/%{name}/_config.yml %{buildroot}%{_datadir}/%{name}/composer.*
 rm -rf %{buildroot}%{_datadir}/%{name}/contrib
 rm -rf %{buildroot}%{_datadir}/%{name}/vendor/phpoffice/phpspreadsheet/.git*
+rm -rf %{buildroot}%{_datadir}/%{name}/vendor/maennchen/zipstream-php/.git*
 ## Add the tmp dir
 install -d -m0700 -o apache -g root %{buildroot}%{_datadir}/%{name}/tmp
 

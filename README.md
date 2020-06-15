@@ -31,16 +31,18 @@ Bootstrap modalbox is linked directly on html and as needed on modal.css.
 ## Install
 ### By RPM
 If you have a yum based system, don't waste time , simply proceed as follow:
-- vi `/etc/yum/repos.d/falon.repo`:
+```
+curl -1sLf \
+  'https://dl.cloudsmith.io/public/csi/shared/cfg/setup/bash.rpm.sh' \
+  | sudo -E bash
+```
 
 ```
-[fury]
-name=Falon CSI Repo
-baseurl=https://yum.fury.io/csi/
-enabled=1
-gpgcheck=0
+curl -1sLf \
+  'https://dl.cloudsmith.io/public/csi/ldap-imapexplorer/cfg/setup/bash.rpm.sh' \
+  | sudo -E bash
 ```
-- yum install LDAP-IMAPExplorer
+- dnf install LDAP-IMAPExplorer
 - reload your Apache server
 - point at `http(s)://<yourserver>/ldapimap`
 
@@ -57,7 +59,7 @@ Enjoy!
 - chown apache tmp
 
 ## Licensing
-This program include:
+This program includes:
 - PHPSpreadSheet https://phpspreadsheet.readthedocs.io
 - Horde IMAP Client https://github.com/horde/Imap_Client
 
