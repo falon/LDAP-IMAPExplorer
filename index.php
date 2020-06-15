@@ -37,7 +37,7 @@ $baseDN= $ini['ldap']['baseDN'];
     <legend>Looking for:</legend>
     UID:  <input class="right" type="text" name="uid" size="45"><br>
     <div class="left">Email: <input type="checkbox" name="allmail" value="1" checked title="Search in both mail and mailAlternateAddress"></div><input class="right" type="email" name="mail" size="45"><br>
-    Alias Email: <input class="right" type="email" name="mailalternateaddress" size="45">
+    <div class="left">Alias Email:</div><input class="right" type="email" name="mailalternateaddress" size="45">
     </fieldset>
     </td></tr>
   <tr>

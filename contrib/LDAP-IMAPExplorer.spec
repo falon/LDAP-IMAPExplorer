@@ -13,10 +13,12 @@ BuildArch:	noarch
 # Required for all versions
 Requires: httpd >= 2.4.6
 Requires: mod_ssl >= 2.4.6
-Requires: php >= 7.1
-Requires: php-ldap >= 7.1
-Requires: FalonCommon >= 0.1.1
-BuildRequires: composer >= 1.8.0
+Requires: php >= 7.2
+Requires: php-ldap >= 7.2
+Requires: FalonCommon >= 0.1.3
+Requires: php-gd
+Requires: php-pecl-zip
+#BuildRequires: composer >= 1.8.0
 #Requires: remi-release >= 7.3
 
 
@@ -84,5 +86,8 @@ esac
 %config(noreplace) %{_sysconfdir}/httpd/conf.d/%{name}.conf
 
 %changelog
+* Mon Jun 15 2020 Marco Favero <marco.favero@csi.it> 1.0.0-1
+- Rebuild with newer modules versions for RH EL8
+
 * Fri Jul 26 2019 Marco Favero <marco.favero@csi.it> 1.0.0-0
 - First build
