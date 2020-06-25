@@ -341,7 +341,16 @@ function view_store ($user,$opt) {
 
 	$cs = count($opt['retattr'])+6;
         if ($LDAPnuser!=0) {
-		$message.="</tbody><tfoot><tr><td colspan=\"$cs\">LDAP entries: {$user['ldap']}<br>Mailboxes account: ".$user['cont']."<br>Mailboxes over threshold ({$opt['soglia']}%): ".$user['numbaduser'].'<br>Mailboxes overquota: '.$user['overquota'].'<br>Reserved space: '.formatGB($user['space']['tot']).' GiB<br>Busy space: '.formatGB($user['space']['occ'])." GiB</td></tr></tfoot></table>";
+		$message .= sprintf('</tbody><tfoot><tr><td colspan="%d">LDAP entries: %d<br>Mailboxes account: %d<br>Mailboxes over threshold (%d%%): %d<br>Mailboxes overquota: %d<br>Reserved space: %.2f GiB<br>Busy space: %.2f GiB</td></tr></tfoot></table>',
+			$cs,
+			$user['ldap'],
+			$user['cont'],
+			$opt['soglia'],
+			$user['numbaduser'],
+			$user['overquota'],
+			formatGB($user['space']['tot']),
+			formatGB($user['space']['occ'])
+		);
 	}
 	return $message;
 }
@@ -410,13 +419,13 @@ function linkurl($ID,$htext,$onlyldap,$style) {
 
 function formatMB($var) {
 	if (empty($var)) return '-';
-        if (is_numeric($var)) return ceil ($var/1024);
+        if (is_numeric($var)) return $var/1024;
         return $var;
 }
 
 function formatGB($var) {
 	if (empty($var)) return '-';
-	if (is_numeric($var)) return ceil ($var/1048576);
+	if (is_numeric($var)) return $var/1048576;
 	return $var;
 }
 

@@ -6,6 +6,8 @@ Version: 1.0.0
 Release: 1%{?dist}
 Group: Networking/Mail
 License: Apache-2.0
+Packager: Marco Favero <falon@ruparpiemonte.it>
+Vendor: Falon Entertainment
 URL: https://falon.github.io/%{name}/
 Source0: https://github.com/falon/%{name}/archive/master.zip
 BuildArch:	noarch
@@ -89,6 +91,7 @@ esac
 %changelog
 * Mon Jun 15 2020 Marco Favero <marco.favero@csi.it> 1.0.0-1
 - Rebuild with newer modules versions for RH EL8
+- Added resume column in detailed IMAP view
 
 * Fri Jul 26 2019 Marco Favero <marco.favero@csi.it> 1.0.0-0
 - First build

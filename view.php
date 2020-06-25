@@ -45,6 +45,7 @@
 		list($uid, $dom) = explode('@',$result[0]['uid'][0]);
 		$mailbox = array('INBOX','INBOX/*');
 
+		$tstart = microtime(TRUE);
 		$mbox=imapopen($result[0]['uid'][0],$imapPwd,$mailhost,$imapAdmin);
 		if ($mbox) {
 			try {
@@ -64,6 +65,10 @@
 
 			print '<br><table><thead><tr><th title="Move on folder name to show the ACL">Folder and ACL</th><th>#mail</th><th>Recent</th><th>Unseen</th><th>SharedSeen</th><th>Expire</th><th>Size (MB)</th></tr></thead><tbody>';
 			if (is_array($list)) {
+				$tot['messages'] = 0;
+                                $tot['recent'] = 0;
+                                $tot['unseen'] = 0;
+                                $tot['size'] = 0;
 				foreach ($list as $val) {
 					$acl = $mbox ->getACL($val['mailbox']);
 					printf('<tr><td>%s</td><td>%d</td><td>%d</td><td>%d</td>',
@@ -72,6 +77,10 @@
 						$val['status']['recent'],
 						$val['status']['unseen']
 					);
+					$tot['messages'] += $val['status']['messages'];
+					$tot['recent'] += $val['status']['recent'];
+					$tot['unseen'] += $val['status']['unseen'];
+
 					try {
 						$meta = array('/shared/vendor/cmu/cyrus-imapd/expire',
 							'/shared/vendor/cmu/cyrus-imapd/sharedseen',
@@ -85,21 +94,30 @@
 
 					if (is_array($metaValues)) {
 						$mboxName = \Horde_Imap_Client_Mailbox::get($val['mailbox'], ENT_QUOTES, 'UTF-8');
-						printf('<td>%s</td><td>%s</td><td>%d</td></tr>',
+						printf('<td>%s</td><td>%s</td><td>%.1f</td></tr>',
 							$metaValues["$mboxName"]['/shared/vendor/cmu/cyrus-imapd/sharedseen'],
 							(isset($metaValues["$mboxName"]['/shared/vendor/cmu/cyrus-imapd/expire'])) ?
 								$metaValues["$mboxName"]['/shared/vendor/cmu/cyrus-imapd/expire'] :
 								'-',
 							formatGB($metaValues["$mboxName"]['/shared/vendor/cmu/cyrus-imapd/size'])
 						);
+						$tot['size'] += $metaValues["$mboxName"]['/shared/vendor/cmu/cyrus-imapd/size'];
 					}
 				}
 			}
 			else print '<tr><td>Denied</td><td>Denied</td><td>Denied</td><td>Denied</td><td>Denied</td><td>Denied</td></tr>';
 				
 			$mbox->close();
-		    }
-		    print '</tbody></table>';
+			# IMAP operations time in microsec
+			$elaps = microtime(TRUE)- $tstart;
+		}
+		printf ('</tbody><tfoot><tr><td>TOT</td><td>%d</td><td>%d</td><td>%d</td><td></td><td></td><td>%.1f</td></tr><tr><th colspan="7">Elapsed IMAP time: %.2f s</th></tr></tfoot></table>',
+			$tot['messages'],
+			$tot['recent'],
+			$tot['unseen'],
+			formatGB($tot['size']),
+			$elaps
+		);
 	}
 		
 	?>
