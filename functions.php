@@ -30,10 +30,10 @@ function clientIP($username) {
 function username() {
         if (isset ($_SERVER['REMOTE_USER'])) $user = $_SERVER['REMOTE_USER'];
                 else if (isset ($_SERVER['USER'])) $user = $_SERVER['USER'];
-                else if ( isset($_SERVER['PHP_AUTH_USER']) ) $user = $_SERVER['PHP_AUTH_USER'];
+		else if ( isset($_SERVER['PHP_AUTH_USER']) ) $user = $_SERVER['PHP_AUTH_USER'];
                 else {
-                        syslog(LOG_ALERT, "No user given by connection from {$_SERVER['REMOTE_ADDR']}. Exiting");
-                        exit(0);
+			syslog(LOG_ALERT, "No user given by connection from {$_SERVER['REMOTE_ADDR']}.");
+			$user = 'anonymous';
                 }
         return $user;
 }

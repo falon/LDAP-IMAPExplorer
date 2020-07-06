@@ -35,7 +35,16 @@
 	if (!ldap_close($ds)) exit ("Errore in chiusura LDAP.</p>");
 	
 
-	if (!$opt['onlyldap']) { 
+	if (!$opt['onlyldap']) {
+
+		$special_use = array(   strtolower(\Horde_Imap_Client::SPECIALUSE_ALL),
+					strtolower(\Horde_Imap_Client::SPECIALUSE_ARCHIVE),
+					strtolower(\Horde_Imap_Client::SPECIALUSE_DRAFTS),
+					strtolower(\Horde_Imap_Client::SPECIALUSE_FLAGGED),
+					strtolower(\Horde_Imap_Client::SPECIALUSE_JUNK),
+					strtolower(\Horde_Imap_Client::SPECIALUSE_SENT),
+					strtolower(\Horde_Imap_Client::SPECIALUSE_TRASH)
+				);
 
 		if (!(isset($result[0]['mailhost'][0]))) {
 			print "<p>This entry has no mailbox.</p>";
@@ -52,7 +61,9 @@
 				$list = $mbox->listMailboxes($mailbox,
 					\Horde_Imap_Client::MBOX_ALL,
 					array(
-					      	'status' => 50,
+						'status' => 63,
+						'special_use' => true,
+						'attributes' => true,
 						'sort' => true,
 						'sort_delimiter' => '/'
 					)
@@ -63,7 +74,7 @@
 				exit ('Some errors happen. See at log.');
 			}
 
-			print '<br><table><thead><tr><th title="Move on folder name to show the ACL">Folder and ACL</th><th>#mail</th><th>Recent</th><th>Unseen</th><th>SharedSeen</th><th>Expire</th><th>Size (MB)</th></tr></thead><tbody>';
+			print '<br><table><thead><tr><th title="Move on folder name to show the ACL">Folder and ACL</th><th>#mail</th><th>Recent</th><th>Unseen</th><th title="Special Use flag as RFC6154">Special</th><th>SharedSeen</th><th>Expire</th><th>Size (MB)</th></tr></thead><tbody>';
 			if (is_array($list)) {
 				$tot['messages'] = 0;
                                 $tot['recent'] = 0;
@@ -80,6 +91,14 @@
 					$tot['messages'] += $val['status']['messages'];
 					$tot['recent'] += $val['status']['recent'];
 					$tot['unseen'] += $val['status']['unseen'];
+
+					$specialflags = '';
+					foreach ($val['attributes'] as $special) {
+						if ( in_array(strtolower($special), $special_use) )
+							$specialflags .= " $special";
+					}
+
+					printf('<td>%s</td>', $specialflags);
 
 					try {
 						$meta = array('/shared/vendor/cmu/cyrus-imapd/expire',
@@ -105,13 +124,13 @@
 					}
 				}
 			}
-			else print '<tr><td>Denied</td><td>Denied</td><td>Denied</td><td>Denied</td><td>Denied</td><td>Denied</td></tr>';
+			else print '<tr><td>Denied</td><td>Denied</td><td>Denied</td><td>Denied</td><td>Denied</td><td>Denied</td><td>Denied</td></tr>';
 				
 			$mbox->close();
 			# IMAP operations time in microsec
 			$elaps = microtime(TRUE)- $tstart;
 		}
-		printf ('</tbody><tfoot><tr><td>TOT</td><td>%d</td><td>%d</td><td>%d</td><td></td><td></td><td>%.1f</td></tr><tr><th colspan="7">Elapsed IMAP time: %.2f s</th></tr></tfoot></table>',
+		printf ('</tbody><tfoot><tr><td>TOT</td><td>%d</td><td>%d</td><td>%d</td><td></td><td></td><td></td><td>%.1f</td></tr><tr><th colspan="7">Elapsed IMAP time: %.2f s</th></tr></tfoot></table>',
 			$tot['messages'],
 			$tot['recent'],
 			$tot['unseen'],

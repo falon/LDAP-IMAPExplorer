@@ -2,8 +2,8 @@
 
 Summary: A complete, more than an RBL Management System.
 Name: LDAP-IMAPExplorer
-Version: 1.0.0
-Release: 1%{?dist}
+Version: 1.0.1
+Release: 0%{?dist}
 Group: Networking/Mail
 License: Apache-2.0
 Packager: Marco Favero <falon@ruparpiemonte.it>
@@ -89,6 +89,9 @@ esac
 %config(noreplace) %{_sysconfdir}/httpd/conf.d/%{name}.conf
 
 %changelog
+* Mon Jul 06 2020 Marco Favero <marco.favero@csi.it> 1.0.1-0
+- Added Special Use list in IMAP view
+
 * Mon Jun 15 2020 Marco Favero <marco.favero@csi.it> 1.0.0-1
 - Rebuild with newer modules versions for RH EL8
 - Added resume column in detailed IMAP view
