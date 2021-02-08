@@ -69,6 +69,8 @@ rm %{buildroot}%{_datadir}/%{name}/_config.yml %{buildroot}%{_datadir}/%{name}/c
 rm -rf %{buildroot}%{_datadir}/%{name}/contrib
 rm -rf %{buildroot}%{_datadir}/%{name}/vendor/phpoffice/phpspreadsheet/.git*
 rm -rf %{buildroot}%{_datadir}/%{name}/vendor/maennchen/zipstream-php/.git*
+rm -rf %{buildroot}%{_datadir}/%{name}/vendor/markbaker/matrix/.git*
+rm -rf %{buildroot}%{_datadir}/%{name}/vendor/psr/http-factory/.git*
 ## Add the tmp dir
 install -d -m0700 -o apache -g root %{buildroot}%{_datadir}/%{name}/tmp
 
