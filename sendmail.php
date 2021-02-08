@@ -2,6 +2,7 @@
 if (!isset($_POST['entries'])) exit(255);
 $data = unserialize($_POST['entries']);
 
+ini_set('display_errors', 'Off');
 $ini = parse_ini_file('LDAP-IMAPExplorer.conf', true);
 $from= $ini['email']['from'];
 $mail_from = $ini['email']['mail_from'];

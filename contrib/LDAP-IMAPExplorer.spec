@@ -3,7 +3,7 @@
 Summary: A complete, more than an RBL Management System.
 Name: LDAP-IMAPExplorer
 Version: 1.0.1
-Release: 0%{?dist}
+Release: 1%{?dist}
 Group: Networking/Mail
 License: Apache-2.0
 Packager: Marco Favero <falon@ruparpiemonte.it>
@@ -20,6 +20,8 @@ Requires: php-ldap >= 7.2
 Requires: FalonCommon >= 0.1.3
 Requires: php-gd
 Requires: php-pecl-zip
+Requires: php-xml
+Requires: php-json
 #BuildRequires: composer >= 1.8.0
 #Requires: remi-release >= 7.3
 
@@ -89,6 +91,9 @@ esac
 %config(noreplace) %{_sysconfdir}/httpd/conf.d/%{name}.conf
 
 %changelog
+* Mon Feb 08 2021 Marco Favero <marco.favero@csi.it> 1.0.1-1
+- Minor fix in error reporting and spec.
+
 * Mon Jul 06 2020 Marco Favero <marco.favero@csi.it> 1.0.1-0
 - Added Special Use list in IMAP view
 

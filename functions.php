@@ -14,6 +14,7 @@
 #
 
 ini_set('error_log', 'syslog');
+ini_set('display_errors', 'Off');
 
 
 function clientIP($username) {
